@@ -33,7 +33,7 @@ services:
       - traefik-proxy
       - default
     ports:
-      - "2222:2222"  # expose GitLab SSH on port 2222 on the host, as Traefik does not yet support TCP routing
+      - "2222:22"  # expose GitLab SSH on port 2222 on the host, as Traefik does not yet support TCP routing
     labels:
       - traefik.enable=true
       - traefik.http.routers.gitlab_insecure.entrypoints=web
