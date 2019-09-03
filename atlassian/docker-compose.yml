@@ -1,0 +1,143 @@
+version: '3.7'
+services:
+
+  db:
+    restart: always
+    container_name: db
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: PG_PASSWORD
+    command: ["-c", "shared_buffers=256MB", "-c", "max_connections=200"]
+    volumes:
+      - atlassian_postgres:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer
+    container_name: db_adminer
+    restart: always
+    expose:
+      - "8080"
+    networks:
+      - traefik-proxy
+      - default
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.dbadmin_insecure.entrypoints=web
+      - traefik.http.routers.dbadmin_insecure.rule=Host(`dbadmin.domain.com`)
+      - traefik.http.routers.dbadmin_insecure.middlewares=redirect@file
+
+      - traefik.http.routers.dbadmin.entrypoints=web-secure
+      - traefik.http.routers.dbadmin.rule=Host(`dbadmin.domain.com`)
+      - traefik.http.routers.dbadmin.tls.certresolver=letsencrypt
+      - traefik.http.services.dbadmin.loadbalancer.server.port=8080
+      - traefik.docker.network=traefik-proxy
+
+  crowd:
+    image: teamatldocker/crowd
+    container_name: crowd
+    restart: always
+    networks:
+      - traefik-proxy
+      - default
+    volumes:
+      - crowd_data:/var/atlassian/crowd
+    links:
+      - db
+    expose:
+      - "8095"
+    environment:
+      - CROWD_PROXY_NAME=crowd.domain.com
+      - CROWD_PROXY_PORT=443
+      - CROWD_PROXY_SCHEME=https
+      - CROWD_URL=http://localhost:8095
+      - LOGIN_BASE_URL=http://localhost:8095
+      - SPLASH_CONTEXT=
+      - CROWD_CONTEXT=ROOT
+      - CROWDID_CONTEXT=
+      - OPENID_CLIENT_CONTEXT=
+      - DEMO_CONTEXT=
+    labels:
+      - "com.blacklabelops.description=Atlassian Crowd"
+      - "com.blacklabelops.service=crowd"
+      - traefik.enable=true
+      - traefik.http.routers.crowd_insecure.entrypoints=web
+      - traefik.http.routers.crowd_insecure.rule=Host(`crowd.domain.com`)
+      - traefik.http.routers.crowd_insecure.middlewares=redirect@file
+
+      - traefik.http.routers.crowd.entrypoints=web-secure
+      - traefik.http.routers.crowd.rule=Host(`crowd.domain.com`)
+      - traefik.http.routers.crowd.tls.certresolver=letsencrypt
+      - traefik.http.services.crowd.loadbalancer.server.port=8095
+      - traefik.docker.network=traefik-proxy
+
+  jira-software:
+    restart: always
+    image: atlassian/jira-software
+    container_name: jira-software
+    environment:
+      - ATL_PROXY_NAME=jira.domain.com
+      - ATL_PROXY_PORT=443
+      - ATL_TOMCAT_SCHEME=https
+    expose:
+      - "8080"
+    links:
+      - db
+    volumes:
+      - jira_software_data:/var/atlassian/application-data/jira
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - traefik-proxy
+      - default
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.jira_insecure.entrypoints=web
+      - traefik.http.routers.jira_insecure.rule=Host(`jira.domain.com`)
+      - traefik.http.routers.jira_insecure.middlewares=redirect@file
+
+      - traefik.http.routers.jira.entrypoints=web-secure
+      - traefik.http.routers.jira.rule=Host(`jira.domain.com`)
+      - traefik.http.routers.jira.tls.certresolver=letsencrypt
+      - traefik.http.services.jira.loadbalancer.server.port=8080
+      - traefik.docker.network=traefik-proxy
+
+  confluence:
+    restart: always
+    image: atlassian/confluence-server:latest
+    container_name: confluence
+    environment:
+      - CATALINA_CONNECTOR_PROXYNAME=confluence.domain.com
+      - CATALINA_CONNECTOR_PROXYPORT=443
+      - CATALINA_CONNECTOR_SCHEME=https
+    expose:
+       - "8090"
+    links:
+      - db
+    volumes:
+      - confluence_data:/var/atlassian/application-data/confluence
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - traefik-proxy
+      - default
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.confluence_insecure.entrypoints=web
+      - traefik.http.routers.confluence_insecure.rule=Host(`confluence.domain.com`)
+      - traefik.http.routers.confluence_insecure.middlewares=redirect@file
+
+      - traefik.http.routers.confluence.entrypoints=web-secure
+      - traefik.http.routers.confluence.rule=Host(`confluence.domain.com`)
+      - traefik.http.routers.confluence.tls.certresolver=letsencrypt
+      - traefik.http.services.confluence.loadbalancer.server.port=8090
+      - traefik.docker.network=traefik-proxy
+
+networks:
+  traefik-proxy:
+    external: true
+
+volumes:
+  atlassian_postgres:
+  confluence_data:
+  crowd_data:
+  jira_software_data:
+
