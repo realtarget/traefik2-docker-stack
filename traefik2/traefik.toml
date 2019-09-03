@@ -12,17 +12,10 @@
   [entryPoints.ssh]
     address = ":2222"
 
-#  [entrypoints.https.tls]
-
-
-[providers.file]
-    filename = "/etc/traefik/provider_file.toml"
-
- [http.middlewares]
-   [http.middlewares.redirect.redirectscheme]
-     scheme = "https"
-
 [providers]
+
+  [providers.file]
+    filename = "/etc/traefik/provider_file.toml"
 
   [providers.docker]
     # Connection to docker host system (docker.sock)
