@@ -1,0 +1,4 @@
+# provider_file.toml
+[http.middlewares]
+  [http.middlewares.redirect.redirectscheme]
+    scheme = "https"
