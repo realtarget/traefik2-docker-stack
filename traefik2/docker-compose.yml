@@ -1,0 +1,36 @@
+version: "3.3"
+
+services:
+
+  traefik:
+    image: traefik:montdor
+    container_name: traefik2
+    command:
+       - --log.level=DEBUG
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.traefik.entrypoints=web
+      - traefik.http.routers.traefik.rule=Host(`traefik.domain.com`)
+      - traefik.http.routers.traefik.middlewares=redirect@file
+
+      - traefik.http.routers.traefik_secure.entrypoints=web-secure
+      - traefik.http.routers.traefik_secure.rule=Host(`traefik.domain.com`)
+      - traefik.http.routers.traefik_secure.tls.certresolver=letsencrypt
+      - traefik.http.services.traefik.loadbalancer.server.port=8080
+      - traefik.docker.network=traefik-proxy
+    ports:
+      - "80:80" # The HTTP port
+#      - "8080:8080" # The Web UI (enabled by --api)
+      - "443:443" # The HTTPS port
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik.toml:/etc/traefik/traefik.toml
+      # Configuration for FILE Provider
+      - ./provider_file.toml:/etc/traefik/provider_file.toml
+      - ./acme.json:/acme.json
+    networks:
+      - default
+      - traefik-proxy
+networks:
+  traefik-proxy:
+    external: true
