@@ -1,0 +1,45 @@
+[Global]
+  CheckNewVersion = true
+  SendAnonymousUsage = true
+
+[entryPoints]
+  [entryPoints.web]
+    address = ":80"
+
+  [entryPoints.web-secure]
+    address = ":443"
+
+  [entryPoints.ssh]
+    address = ":2222"
+
+#  [entrypoints.https.tls]
+
+
+[providers.file]
+    filename = "/etc/traefik/provider_file.toml"
+
+ [http.middlewares]
+   [http.middlewares.redirect.redirectscheme]
+     scheme = "https"
+
+[providers]
+
+  [providers.docker]
+    # Connection to docker host system (docker.sock)
+    endpoint = "unix:///var/run/docker.sock"
+    watch = true
+    # This will hide all docker containers that don't have explicitly
+    # set label to "enable"
+    exposedbydefault = false
+    swarmMode = false
+
+[API]
+  Dashboard = true
+  debug = true
+
+[certificatesResolvers.letsencrypt.acme]
+  email = "you@email.com"
+  storage = "./acme.json"
+
+[certificatesResolvers.letsencrypt.acme.httpChallenge]
+    entryPoint = "web"
