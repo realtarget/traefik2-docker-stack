@@ -5,6 +5,8 @@ Some days ago traefik released it's brand new Version 2 (RC1) including http and
 
 First of all: The documentation of traefik V2 is huge and detailed, but it's impossible to find any good tutorials or copy-and-paste examples to get things fast up and running. However, after many hours of reading the forums, searching github issues and drinking wine, i had all containers in production.
 
+If you have any questions - just [open an issue](https://github.com/realtarget/traefik2-docker-stack/issues) :-)
+
 ## traefik v2 Proxy
 
 My configuration includes the following files:
