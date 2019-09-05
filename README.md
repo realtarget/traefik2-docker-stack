@@ -1,11 +1,11 @@
 
-# My Docker Development Stack
+# My Docker Development Stack (traefik, gitlab, Jira, Confluence, Crowd, Rocketchat & Portainer)
 
 Some days ago traefik released it's brand new Version 2 (RC1) including http and TCP routing (including SSH) - YAY! So i've rebuilt our docker development stack to consolidate all needed services from different machines on a new all-in-one docker server.
 
 First of all: The documentation of traefik V2 is huge and detailed, but it's impossible to find any good tutorials or copy-and-paste examples to get things fast up and running. However, after many hours of reading the forums, searching github issues and drinking wine, i had all containers in production.
 
-## traefik Proxy
+## traefik v2 Proxy
 
 My configuration includes the following files:
 * docker-compose.yml *for the docker container*
