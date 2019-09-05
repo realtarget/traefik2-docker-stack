@@ -113,3 +113,8 @@ Configs are self-explaining if you take a look at the traefik and gitlab config.
 * Docker 18.09.7
 * docker-compose version 1.25.0-rc2
 
+### Useful links
+ - [Traefik (Github)](https://github.com/containous/traefik)
+ - [Traefik v2 Documentation](https://docs.traefik.io/v2.0/)
+ - [Traefik Forums v2](https://community.containo.us/c/traefik/traefik-v2)
+
