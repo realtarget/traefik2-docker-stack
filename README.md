@@ -103,7 +103,7 @@ Configs are self-explaining if you take a look at the traefik and gitlab config.
 ## Server Specs
 
 ### Hardware
-* Intel Haswell i5-4590 (quad-core, up to 4x 3,7 GHz
+* Intel Haswell i5-4590 (quad-core, up to 4x 3,7 GHz)
 * 32 GB DDR3 RAM
 * 2x 500GB SSD
 * 1 Gbit/s Uplink
