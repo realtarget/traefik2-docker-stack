@@ -16,7 +16,10 @@ services:
       - traefik.http.routers.traefik_secure.entrypoints=web-secure
       - traefik.http.routers.traefik_secure.rule=Host(`traefik.domain.com`)
       - traefik.http.routers.traefik_secure.tls.certresolver=letsencrypt
-      - traefik.http.services.traefik.loadbalancer.server.port=8080
+      # Change // Fix for RC3/RC4
+      - traefik.http.routers.traefik_secure.service=api@internal
+      # Old // RC2
+      #- traefik.http.services.traefik.loadbalancer.server.port=8080
       - traefik.docker.network=traefik-proxy
     ports:
       - "80:80" # The HTTP port
