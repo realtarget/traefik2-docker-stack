@@ -1,0 +1,31 @@
+version: "3"
+
+services:
+  frontend:
+    image: sonatype/nexus3
+    container_name: nexus_frontend
+    volumes:
+      - nexus-data:/nexus-data
+    networks:
+      - traefik-proxy
+      - default
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.nexus_insecure.entrypoints=web
+      - traefik.http.routers.nexus_insecure.rule=Host(`nexus.domain.com`)
+      - traefik.http.routers.nexus_insecure.middlewares=redirect@file
+
+      - traefik.http.routers.nexus.entrypoints=web-secure
+      - traefik.http.routers.nexus.rule=Host(`nexus.domain.com`)
+      - traefik.http.routers.nexus.tls.certresolver=letsencrypt
+      - traefik.http.services.nexus.loadbalancer.server.port=8081
+      - traefik.docker.network=traefik-proxy
+    restart: unless-stopped
+
+networks:
+  traefik-proxy:
+    external: true
+
+volumes:
+  nexus-data:
+
