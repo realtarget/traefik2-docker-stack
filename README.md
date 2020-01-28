@@ -96,6 +96,9 @@ Configs are self-explaining if you take a look at the traefik and gitlab config.
 ## Portainer
 Configs are self-explaining if you take a look at the traefik and gitlab config.
 
+## Nexus
+Configs are self-explaining if you take a look at the traefik and gitlab config.
+
 ## Server Specs
 
 ### Hardware
