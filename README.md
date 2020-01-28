@@ -26,7 +26,7 @@ for security purposes. The file can be left empty and will be automatically fill
 
 #### http-to-https redirect middleware
 
-I use two entry points for each webservice. One for (unencrypted) http traffic and one for https. So we need to define a middleware in the docker labels for unencrypted port 80 acces.
+I use two entry points for each webservice. One for (unencrypted) http traffic and one for https. So we need to define a middleware in the docker labels for unencrypted port 80 access.
 
 ```
 # Entry point for http
@@ -63,12 +63,8 @@ The main reason for switching to traefik v2 was that it supports hostname based 
 
 First of all, define the ssh port in the gitlab environment variables so that all links in the "clone repository" section work:
 
+    # This refers to the ssh port Traaefik has for the ssh entry point
     gitlab_rails['gitlab_shell_ssh_port'] = 2222
-
-Define the docker port:
-
-    ports:
-    - "2222:22"
 
 And the traefik labels:
 
@@ -78,8 +74,8 @@ And the traefik labels:
     - traefik.tcp.routers.gitlab-ssh.entrypoints=ssh
     # define service to use
     - traefik.tcp.routers.gitlab-ssh.service=gitlab-ssh-svc
-    # define backend port to use
-    - traefik.tcp.services.gitlab-ssh-svc.loadbalancer.server.port=2222
+    # define backend port to use, this is the port Gitlab ssh listens on
+    - traefik.tcp.services.gitlab-ssh-svc.loadbalancer.server.port=22
 
 #### treafik.toml
 
@@ -107,7 +103,7 @@ Configs are self-explaining if you take a look at the traefik and gitlab config.
 * 32 GB DDR3 RAM
 * 2x 500GB SSD
 * 1 Gbit/s Uplink
- 
+
 ### Software 
 * Ubuntu 18.04 LTS
 * Docker 18.09.7
