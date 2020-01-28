@@ -1,5 +1,5 @@
 
-# My Docker Development Stack (traefik, gitlab, Jira, Confluence, Crowd, Rocketchat & Portainer)
+# My Docker Development Stack (traefik, gitlab, Jira, Confluence, Crowd, Rocketchat, Nexus & Portainer)
 
 Some days ago traefik released it's brand new Version 2 (RC1) including http and TCP routing (including SSH) - YAY! So i've rebuilt our docker development stack to consolidate all needed services from different machines on a new all-in-one docker server.
 
@@ -93,10 +93,10 @@ Configs are self-explaining if you take a look at the traefik and gitlab config.
 ## Atlassian Confluence, Jira Software + Crowd
 Configs are self-explaining if you take a look at the traefik and gitlab config.
 
-## Portainer
+## Nexus
 Configs are self-explaining if you take a look at the traefik and gitlab config.
 
-## Nexus
+## Portainer
 Configs are self-explaining if you take a look at the traefik and gitlab config.
 
 ## Server Specs
