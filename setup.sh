@@ -2,6 +2,7 @@
 
 set -ex
 
-docker network create traefik-proxy
-PATH="$PATH":/usr/local/bin docker-compose -f atlassian/docker-compose.yml -f gitlab/docker-compose.yml -f nexus/docker-compose.yml -f portainer/docker-compose.yml -f rocketchat/docker-compose.yml -f traefik2/docker-compose.yml up -d
-
+docker network create traefik-proxy || true
+for app in traefik2 portainer atlassian gitlab nexus rocketchat; do
+  PATH="$PATH":/usr/local/bin docker-compose -f $app/docker-compose.yml up -d
+done
