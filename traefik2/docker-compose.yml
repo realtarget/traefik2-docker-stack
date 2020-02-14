@@ -3,7 +3,7 @@ version: "3"
 services:
 
   traefik:
-    image: traefik:montdor
+    image: traefik:v2
     container_name: traefik2
     command:
        - --log.level=DEBUG
