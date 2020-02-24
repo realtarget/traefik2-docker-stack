@@ -63,6 +63,8 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+      labels:
+        - "traefik.enable=false"
     image: mongo:3.4
     command: >
       bash -c

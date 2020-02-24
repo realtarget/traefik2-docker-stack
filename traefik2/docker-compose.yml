@@ -3,17 +3,15 @@ version: "3"
 services:
 
   traefik:
- 
     image: traefik:v2.1
     command:
       - "--log.level=DEBUG"
       - "--accesslog=true"
-      - "--accessLog.filePath=/access.log"   
-      - "--log.filePath=/traefik.log"   
+      #- "--accessLog.filePath=/access.log"
+      #- "--log.filePath=/traefik.log"
       - "--providers.docker=true"
       - "--providers.docker.swarmmode=true"
       - "--providers.docker.watch"
-
    # Control the number of instances deployed
     deploy:
       mode: replicated
@@ -29,7 +27,6 @@ services:
       # Configuration for FILE Provider
       - ./provider_file.toml:/etc/traefik/provider_file.toml
       - ./acme.json:/acme.json
-
     networks:
       - default
       - traefik-proxy
