@@ -22,8 +22,6 @@ services:
       - MAIL_URL=smtp://smtp.email
     depends_on:
       - mongo
-    expose:
-      - "3000"
     # Control the number of instances deployed
     deploy:
       mode: replicated
