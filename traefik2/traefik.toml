@@ -2,9 +2,16 @@
   CheckNewVersion = true
   SendAnonymousUsage = true
 
+[accessLog]
+  filePath = "/access.log"
+
 [entryPoints]
   [entryPoints.web]
     address = ":80"
+    [entryPoints.http.redirect]
+       entryPoint = "https"
+
+  [entry
 
   [entryPoints.web-secure]
     address = ":443"
@@ -24,7 +31,7 @@
     # This will hide all docker containers that don't have explicitly
     # set label to "enable"
     exposedbydefault = false
-    swarmMode = false
+    swarmMode = true
 
 [API]
   Dashboard = true

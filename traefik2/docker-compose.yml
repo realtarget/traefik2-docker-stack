@@ -3,10 +3,21 @@ version: "3"
 services:
 
   traefik:
-    image: traefik:v2
-    container_name: traefik2
+ 
+    image: traefik:v2.1
     command:
-       - --log.level=DEBUG
+      - "--log.level=DEBUG"
+      - "--accesslog=true"
+      - "--accessLog.filePath=/access.log"   
+      - "--log.filePath=/traefik.log"   
+      - "--providers.docker=true"
+      - "--providers.docker.swarmmode=true"
+      - "--providers.docker.watch"
+
+   # Control the number of instances deployed
+    deploy:
+      mode: replicated
+      replicas: 1
     ports:
       - "2222:2222" # The SSH port
       - "80:80" # The HTTP port
@@ -14,96 +25,15 @@ services:
       - "443:443" # The HTTPS port
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./traefik.toml:/etc/traefik/traefik.toml
+      #- ./traefik.toml:/etc/traefik/traefik.toml
       # Configuration for FILE Provider
       - ./provider_file.toml:/etc/traefik/provider_file.toml
       - ./acme.json:/acme.json
+
     networks:
       - default
       - traefik-proxy
-    deploy:
-      labels:
-        - traefik.enable=true
-        - traefik.http.routers.traefik.entrypoints=web
-        - traefik.http.routers.traefik.rule=Host(`traefik.domain.com`)
-        - traefik.http.routers.traefik.middlewares=redirect@file
-
-        - traefik.http.routers.traefik_secure.entrypoints=web-secure
-        - traefik.http.routers.traefik_secure.rule=Host(`traefik.domain.com`)
-        - traefik.http.routers.traefik_secure.tls.certresolver=letsencrypt
-        - traefik.http.routers.traefik_secure.service=api@internal
-        - traefik.docker.network=traefik-proxy
-      mode: global
-      placement:
-        constraints:
-          - node.role == manager
-      update_config:
-        parallelism: 1
-        delay: 10s
-      restart_policy:
-        condition: unless-stopped
-
-  prometheus:
-    image: prom/prometheus
-    volumes:
-      - ./prometheus/:/etc/prometheus/
-      - prometheus_data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
-      - '--web.console.templates=/usr/share/prometheus/consoles'
-    networks:
-      - traefik-proxy
-      - default
-    deploy:
-      labels:
-       - "traefik.http.routers.prometheus.rule=Host(`prometheus.localhost`)"
-       - "traefik.http.routers.prometheus.service=prometheus"
-       - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
-       - "traefik.docker.network=traefik-proxy"
-      placement:
-        constraints:
-        - node.role == manager
-      restart_policy:
-        condition: unless-stopped
-  
-  grafana:
-    image: ctc-devops/grafana:latest
-    depends_on:
-      - prometheus
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./grafana/provisioning/:/etc/grafana/provisioning/
-    env_file:
-      - ./grafana/config.monitoring
-    networks:
-      - traefik-proxy
-      - default
-    user: "104"
-    deploy:
-      labels:
-        - traefik.enable=true
-        - traefik.http.routers.grafana.entrypoints=web
-        - traefik.http.routers.grafana.rule=Host(`grafana.domain.com`)
-        - traefik.http.routers.grafana.middlewares=redirect@file
-
-        - traefik.http.routers.grafana.entrypoints=web-secure
-        - traefik.http.routers.grafana.rule=Host(`grafana.domain.com`)
-        - traefik.http.routers.grafana.tls.certresolver=letsencrypt
-        - traefik.http.services.grafana.loadbalancer.server.port=9000
-        - traefik.docker.network=traefik-proxy
-      placement:
-        constraints:
-          - node.role == manager
-      restart_policy:
-        condition: unless-stopped
 
 networks:
   traefik-proxy:
     external: true
-
-volumes:
-  prometheus_data: {}
-  grafana_data: {}
-

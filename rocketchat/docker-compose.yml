@@ -2,6 +2,7 @@ version: '3'
 
 services:
   rocketchat:
+
     image: rocketchat/rocket.chat:latest
     command: >
       bash -c
@@ -11,7 +12,6 @@ services:
           echo \"Tried $$i times. Waiting 5 secs...\";
           sleep 5;
         done; (exit $$s)"
-    restart: unless-stopped
     volumes:
       - uploads:/app/uploads
     environment:
@@ -24,34 +24,45 @@ services:
       - mongo
     expose:
       - "3000"
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.rocket_insecure.entrypoints=web
-      - traefik.http.routers.rocket_insecure.rule=Host(`rocket.domain.com`)
-      - traefik.http.routers.rocket_insecure.middlewares=redirect@file
+    # Control the number of instances deployed
+    deploy:
+      mode: replicated
+      replicas: 3
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.rocket_insecure.entrypoints=http
+        - traefik.http.routers.rocket_insecure.rule=Host(`rocket.domain.com`)
+        #- traefik.http.routers.rocket_insecure.middlewares=redirect@file
 
-      - traefik.http.routers.rocket.entrypoints=web-secure
-      - traefik.http.routers.rocket.rule=Host(`rocket.domain.com`)
-      - traefik.http.routers.rocket.tls.certresolver=letsencrypt
-      - traefik.http.services.rocket.loadbalancer.server.port=3000
-      - traefik.docker.network=traefik-proxy
+        - traefik.http.routers.rocket.entrypoints=https
+        - traefik.http.routers.rocket.rule=Host(`rocket.domain.com`)
+        #- traefik.http.routers.rocket.tls.certresolver=letsencrypt
+        - traefik.http.services.rocket.loadbalancer.server.port=3000
+        - traefik.docker.network=traefik-proxy
     networks:
       - traefik-proxy
       - default
 
   mongo:
     image: mongo:4.0
-    restart: unless-stopped
     volumes:
      - db:/data/db
      #- ./data/dump:/dump
     command: mongod --smallfiles --oplogSize 128 --replSet rs0 --storageEngine=mmapv1
-    labels:
-      - "traefik.enable=false"
+       # Control the number of instances deployed
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - "traefik.enable=false"
 
   # this container's job is just run the command to initialize the replica set.
   # it will run the command and remove himself (it will not stay running)
   mongo-init-replica:
+    # Control the number of instances deployed
+    deploy:
+      mode: replicated
+      replicas: 1
     image: mongo:3.4
     command: >
       bash -c
@@ -70,7 +81,6 @@ services:
   # hubot, the popular chatbot (add the bot user first and change the password before starting this image)
   hubot:
     image: rocketchat/hubot-rocketchat:latest
-    restart: unless-stopped
     environment:
       - ROCKETCHAT_URL=rocketchat:3000
       - ROCKETCHAT_ROOM=GENERAL
@@ -79,8 +89,12 @@ services:
       - EXTERNAL_SCRIPTS=hubot-help,hubot-seen,hubot-links,hubot-diagnostics
     depends_on:
       - rocketchat
-    labels:
-      - "traefik.enable=false"
+  # Control the number of instances deployed
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - "traefik.enable=false"
     volumes:
       - scripts:/home/hubot/scripts
   # this is used to expose the hubot port for notifications on the host on port 3001, e.g. for hubot-jenkins-notifier

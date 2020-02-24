@@ -1,0 +1,61 @@
+version: "3"
+
+services:
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - traefik-proxy
+      - default
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.prometheus_insecure.entrypoints=web
+      - traefik.http.routers.prometheus_insecure.rule=Host(`prometheus.domain.com`)
+      #- traefik.http.routers.prometheus_insecure.middlewares=redirect@file
+
+      - traefik.http.routers.prometheus.entrypoints=web-secure
+      - traefik.http.routers.prometheus.rule=Host(`prometheus.domain.com`)
+      #- traefik.http.routers.prometheus.tls.certresolver=letsencrypt
+      - traefik.http.routers.prometheus.service=prometheus
+      - traefik.http.services.prometheus.loadbalancer.server.port=9090
+      - traefik.docker.network=traefik-proxy
+  
+  grafana:
+    image: scholarsmate/grafana:ctc-devops
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning/:/etc/grafana/provisioning/
+    env_file:
+      - ./grafana/config.monitoring
+    networks:
+      - traefik-proxy
+      - default
+    user: "104"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.grafana_insecure.entrypoints=web
+      - traefik.http.routers.grafana_insecure.rule=Host(`grafana.domain.com`)
+      #- traefik.http.routers.grafana_insecure.middlewares=redirect@file
+
+      - traefik.http.routers.grafana.entrypoints=web-secure
+      - traefik.http.routers.grafana.rule=Host(`grafana.domain.com`)
+      #- traefik.http.routers.grafana.tls.certresolver=letsencrypt
+      - traefik.http.services.grafana.loadbalancer.server.port=9000
+      - traefik.docker.network=traefik-proxy
+
+networks:
+  traefik-proxy:
+    external: true
+
+volumes:
+  prometheus_data:
+  grafana_data:

@@ -4,11 +4,11 @@ services:
   # The GitLab container itself
   gitlab:
     image: 'gitlab/gitlab-ce:latest'
-    restart: always
     hostname: 'gitlab.mydomain.com'
     environment:
       GITLAB_OMNIBUS_CONFIG: |
-        external_url 'https://gitlab.domain.com'
+        letsencrypt['enable'] = false
+        external_url 'http://gitlab.domain.com'
         nginx['listen_https'] = false
         nginx['listen_port'] = 80
         gitlab_rails['backup_upload_remote_directory'] = 's3-backup-bucket'
@@ -28,24 +28,29 @@ services:
     networks:
       - traefik-proxy
       - default
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.gitlab_insecure.entrypoints=web
-      - traefik.http.routers.gitlab_insecure.rule=Host(`gitlab.domain.com`)
-      - traefik.http.routers.gitlab_insecure.middlewares=redirect@file
+    # Control the number of instances deployed
+    deploy:
+      mode: replicated
+      replicas: 3
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.gitlab_insecure.entrypoints=http
+        - traefik.http.routers.gitlab_insecure.rule=Host(`gitlab.domain.com`)
+        #- traefik.http.routers.gitlab_insecure.middlewares=redirect@file
 
-      - traefik.http.routers.gitlab.entrypoints=web-secure
-      - traefik.http.routers.gitlab.rule=Host(`gitlab.domain.com`)
-      - traefik.http.routers.gitlab.tls.certresolver=letsencrypt
-      - traefik.http.services.gitlab.loadbalancer.server.port=80
-      - traefik.docker.network=traefik-proxy
+        - traefik.http.routers.gitlab.entrypoints=https
+        - traefik.http.routers.gitlab.rule=Host(`gitlab.domain.com`)
+        #- traefik.http.routers.gitlab.tls.certresolver=letsencrypt
+        - traefik.http.services.gitlab.loadbalancer.server.port=80
+        - traefik.docker.network=traefik-proxy
 
-      # Can't filter TCP traffic on SNI, see link below
-      # https://community.containo.us/t/routing-ssh-traffic-with-traefik-v2/717/6
-      - traefik.tcp.routers.gitlab-ssh.rule=HostSNI(`*`)
-      - traefik.tcp.routers.gitlab-ssh.entrypoints=ssh
-      - traefik.tcp.routers.gitlab-ssh.service=gitlab-ssh-svc
-      - traefik.tcp.services.gitlab-ssh-svc.loadbalancer.server.port=22
+        # Can't filter TCP traffic on SNI, see link below
+        # https://community.containo.us/t/routing-ssh-traffic-with-traefik-v2/717/6
+        #- traefik.tcp.routers.gitlab-ssh.rule=HostSNI(`*`)
+        #- traefik.tcp.routers.gitlab-ssh.entrypoints=ssh
+        #- traefik.tcp.routers.gitlab-ssh.service=gitlab-ssh-svc
+        #- traefik.tcp.services.gitlab-ssh-svc.loadbalancer.server.port=22
+
 
 networks:
   traefik-proxy:
