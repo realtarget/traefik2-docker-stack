@@ -10,26 +10,26 @@ services:
     volumes:
       - atlassian_postgres:/var/lib/postgresql/data
 
-   dbadmin:
-     image: adminer
-     networks:
-       - traefik-proxy
-       - default
+  dbadmin:
+    image: adminer
+    networks:
+      - traefik-proxy
+      - default
     # Control the number of instances deployed
-     deploy:
-       mode: replicated
-       replicas: 1
-       labels:
-         - traefik.enable=true
-         - traefik.http.routers.dbadmin_insecure.entrypoints=http
-         - traefik.http.routers.dbadmin_insecure.rule=Host(`dbadmin.domain.com`)
-         #- traefik.http.routers.dbadmin_insecure.middlewares=redirect@file
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.dbadmin_insecure.entrypoints=http
+        - traefik.http.routers.dbadmin_insecure.rule=Host(`dbadmin.domain.com`)
+        #- traefik.http.routers.dbadmin_insecure.middlewares=redirect@file
 
-         - traefik.http.routers.dbadmin.entrypoints=https
-         - traefik.http.routers.dbadmin.rule=Host(`dbadmin.domain.com`)
-         #- traefik.http.routers.dbadmin.tls.certresolver=letsencrypt
-         - traefik.http.services.dbadmin.loadbalancer.server.port=8080
-         - traefik.docker.network=traefik-proxy
+        - traefik.http.routers.dbadmin.entrypoints=https
+        - traefik.http.routers.dbadmin.rule=Host(`dbadmin.domain.com`)
+        #- traefik.http.routers.dbadmin.tls.certresolver=letsencrypt
+        - traefik.http.services.dbadmin.loadbalancer.server.port=8080
+        - traefik.docker.network=traefik-proxy
 
   crowd:
     image: teamatldocker/crowd
@@ -132,4 +132,3 @@ volumes:
   confluence_data:
   crowd_data:
   jira_data:
-

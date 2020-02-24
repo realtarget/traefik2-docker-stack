@@ -1,6 +1,6 @@
 [Global]
-  CheckNewVersion = true
-  SendAnonymousUsage = true
+  CheckNewVersion = false
+  SendAnonymousUsage = false
 
 [accessLog]
   filePath = "/access.log"
@@ -10,20 +10,14 @@
     address = ":80"
     [entryPoints.http.redirect]
        entryPoint = "https"
-
-  [entry
-
   [entryPoints.web-secure]
     address = ":443"
-
   [entryPoints.ssh]
     address = ":2222"
 
 [providers]
-
   [providers.file]
     filename = "/etc/traefik/provider_file.toml"
-
   [providers.docker]
     # Connection to docker host system (docker.sock)
     endpoint = "unix:///var/run/docker.sock"
@@ -36,10 +30,3 @@
 [API]
   Dashboard = true
   debug = true
-
-[certificatesResolvers.letsencrypt.acme]
-  email = "you@email.com"
-  storage = "./acme.json"
-
-[certificatesResolvers.letsencrypt.acme.httpChallenge]
-    entryPoint = "web"
