@@ -7,7 +7,7 @@ services:
     environment:
       # REQUIRED - Should be equal to the service name prefixed by "tasks." when deployed inside an overlay network
       AGENT_CLUSTER_ADDR: tasks.agent
-      # AGENT_PORT: 9001
+      AGENT_PORT: 9001
       # LOG_LEVEL: debug
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -17,7 +17,8 @@ services:
     deploy:
       mode: global
       placement:
-        constraints: [node.platform.os == linux]
+        constraints:
+          - node.platform.os == linux
   
   portainer:
     image: portainer/portainer
@@ -32,7 +33,8 @@ services:
       mode: replicated
       replicas: 1
       placement:
-        constraints: [node.role == manager]
+        constraints:
+          - node.role == manager
       labels:
         - traefik.enable=true
         - traefik.http.routers.portainer.entrypoints=web
