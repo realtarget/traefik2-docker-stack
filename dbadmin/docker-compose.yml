@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+
+  dbadmin:
+    image: adminer:latest
+    networks:
+      - traefik-proxy
+      - default
+    # Control the number of instances deployed
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.dbadmin.entrypoints=web
+        - traefik.http.routers.dbadmin.rule=Host(`dbadmin.domain.com`)
+        - traefik.http.services.dbadmin.loadbalancer.server.port=8080
+        - traefik.docker.network=traefik-proxy
+
+networks:
+  traefik-proxy:
+    external: true

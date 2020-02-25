@@ -8,64 +8,7 @@ services:
       POSTGRES_PASSWORD: PG_PASSWORD
     command: ["-c", "shared_buffers=256MB", "-c", "max_connections=200"]
     volumes:
-      - atlassian_postgres:/var/lib/postgresql/data
-
-  dbadmin:
-    image: adminer
-    networks:
-      - traefik-proxy
-      - default
-    # Control the number of instances deployed
-    deploy:
-      mode: replicated
-      replicas: 1
-      labels:
-        - traefik.enable=true
-        - traefik.http.routers.dbadmin_insecure.entrypoints=http
-        - traefik.http.routers.dbadmin_insecure.rule=Host(`dbadmin.domain.com`)
-        #- traefik.http.routers.dbadmin_insecure.middlewares=redirect@file
-
-        - traefik.http.routers.dbadmin.entrypoints=https
-        - traefik.http.routers.dbadmin.rule=Host(`dbadmin.domain.com`)
-        #- traefik.http.routers.dbadmin.tls.certresolver=letsencrypt
-        - traefik.http.services.dbadmin.loadbalancer.server.port=8080
-        - traefik.docker.network=traefik-proxy
-
-  crowd:
-    image: teamatldocker/crowd
-    networks:
-      - traefik-proxy
-      - default
-    volumes:
-      - crowd_data:/var/atlassian/crowd
-    environment:
-      - CROWD_PROXY_NAME=crowd.domain.com
-      - CROWD_PROXY_PORT=443
-      - CROWD_PROXY_SCHEME=https
-      - CROWD_URL=http://localhost:8095
-      - LOGIN_BASE_URL=http://localhost:8095
-      - SPLASH_CONTEXT=
-      - CROWD_CONTEXT=ROOT
-      - CROWDID_CONTEXT=
-      - OPENID_CLIENT_CONTEXT=
-      - DEMO_CONTEXT=
-     # Control the number of instances deployed
-    deploy:
-      mode: replicated
-      replicas: 3
-      labels:
-        - "com.blacklabelops.description=Atlassian Crowd"
-        - "com.blacklabelops.service=crowd"
-        - traefik.enable=true
-        - traefik.http.routers.crowd_insecure.entrypoints=http
-        - traefik.http.routers.crowd_insecure.rule=Host(`crowd.domain.com`)
-        #- traefik.http.routers.crowd_insecure.middlewares=redirect@file
-
-        - traefik.http.routers.crowd.entrypoints=https
-        - traefik.http.routers.crowd.rule=Host(`crowd.domain.com`)
-        #- traefik.http.routers.crowd.tls.certresolver=letsencrypt
-        - traefik.http.services.crowd.loadbalancer.server.port=8095
-        - traefik.docker.network=traefik-proxy
+      - postgres_data:/var/lib/postgresql/data
 
   jira:
     image: atlassian/jira-software
@@ -79,6 +22,8 @@ services:
     networks:
       - traefik-proxy
       - default
+    depends_on:
+      - db
     # Control the number of instances deployed
     deploy:
       mode: replicated
@@ -107,6 +52,8 @@ services:
     networks:
       - traefik-proxy
       - default
+    depends_on:
+      - db
     # Control the number of instances deployed
     deploy:
       mode: replicated
@@ -128,7 +75,6 @@ networks:
     external: true
 
 volumes:
-  atlassian_postgres:
+  postgres_data:
   confluence_data:
-  crowd_data:
   jira_data:

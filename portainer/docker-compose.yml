@@ -1,34 +1,48 @@
-version: "3"
+version: "3.3"
 
 services:
-  portainer:
-    image: portainer/portainer
+
+  agent:
+    image: portainer/agent
+    environment:
+      # REQUIRED - Should be equal to the service name prefixed by "tasks." when deployed inside an overlay network
+      AGENT_CLUSTER_ADDR: tasks.agent
+      # AGENT_PORT: 9001
+      # LOG_LEVEL: debug
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/volumes:/var/lib/docker/volumes
+    networks:
+      - agent-network
+    deploy:
+      mode: global
+      placement:
+        constraints: [node.platform.os == linux]
+  
+  portainer:
+    image: portainer/portainer
+    command: -H tcp://tasks.agent:9001 --tlsskipverify
+    volumes:
       - portainer_data:/data
     networks:
       - traefik-proxy
+      - agent-network
       - default
     deploy:
       mode: replicated
-      replicas: 3
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
       labels:
         - traefik.enable=true
-        - traefik.http.routers.portainer_insecure.entrypoints=web
-        - traefik.http.routers.portainer_insecure.rule=Host(`portainer.domain.com`)
-        #- traefik.http.routers.portainer_insecure.middlewares=redirect@file
-
-        - traefik.http.routers.portainer.entrypoints=web-secure
+        - traefik.http.routers.portainer.entrypoints=web
         - traefik.http.routers.portainer.rule=Host(`portainer.domain.com`)
-        #- traefik.http.routers.portainer.tls.certresolver=letsencrypt
         - traefik.http.services.portainer.loadbalancer.server.port=9000
         - traefik.docker.network=traefik-proxy
-        # Traefik service that listens to HTTP
-        - traefik.redirectorservice.frontend.entryPoints=http
-        - traefik.redirectorservice.frontend.redirect.entryPoint=https
-        # Traefik service that listens to HTTPS
-        - traefik.webservice.frontend.entryPoints=https
+
 networks:
+  agent-network:
+    driver: overlay
   traefik-proxy:
     external: true
 

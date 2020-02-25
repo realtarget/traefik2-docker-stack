@@ -1,8 +1,8 @@
 version: '3'
 
 services:
-  rocketchat:
 
+  rocketchat:
     image: rocketchat/rocket.chat:latest
     command: >
       bash -c
@@ -13,7 +13,7 @@ services:
           sleep 5;
         done; (exit $$s)"
     volumes:
-      - uploads:/app/uploads
+      - rocketchat_uploads:/app/uploads
     environment:
       - PORT=3000
       - ROOT_URL=http://localhost:3000
@@ -28,14 +28,9 @@ services:
       replicas: 3
       labels:
         - traefik.enable=true
-        - traefik.http.routers.rocket_insecure.entrypoints=http
-        - traefik.http.routers.rocket_insecure.rule=Host(`rocket.domain.com`)
-        #- traefik.http.routers.rocket_insecure.middlewares=redirect@file
-
-        - traefik.http.routers.rocket.entrypoints=https
-        - traefik.http.routers.rocket.rule=Host(`rocket.domain.com`)
-        #- traefik.http.routers.rocket.tls.certresolver=letsencrypt
-        - traefik.http.services.rocket.loadbalancer.server.port=3000
+        - traefik.http.routers.rocketchat.entrypoints=web
+        - traefik.http.routers.rocketchat.rule=Host(`rocketchat.domain.com`)
+        - traefik.http.services.rocketchat.loadbalancer.server.port=3000
         - traefik.docker.network=traefik-proxy
     networks:
       - traefik-proxy
@@ -44,7 +39,7 @@ services:
   mongo:
     image: mongo:4.0
     volumes:
-     - db:/data/db
+     - rocketchat_db:/data/db
      #- ./data/dump:/dump
     command: mongod --smallfiles --oplogSize 128 --replSet rs0 --storageEngine=mmapv1
        # Control the number of instances deployed
@@ -80,24 +75,25 @@ services:
 
   # hubot, the popular chatbot (add the bot user first and change the password before starting this image)
   hubot:
+    entrypoint: [ '/bin/sh', '-c', 'sleep 900000' ]
     image: rocketchat/hubot-rocketchat:latest
     environment:
       - ROCKETCHAT_URL=rocketchat:3000
       - ROCKETCHAT_ROOM=GENERAL
       - ROCKETCHAT_USER=bot
-# you can add more scripts as you'd like here, they need to be installable by npm
+      # you can add more scripts as you'd like here, they need to be installable by npm
       - EXTERNAL_SCRIPTS=hubot-help,hubot-seen,hubot-links,hubot-diagnostics
     depends_on:
       - rocketchat
-  # Control the number of instances deployed
+    # Control the number of instances deployed
     deploy:
       mode: replicated
       replicas: 1
       labels:
         - "traefik.enable=false"
     volumes:
-      - scripts:/home/hubot/scripts
-  # this is used to expose the hubot port for notifications on the host on port 3001, e.g. for hubot-jenkins-notifier
+      - rocketchat_scripts:/home/hubot/scripts
+    # this is used to expose the hubot port for notifications on the host on port 3001, e.g. for hubot-jenkins-notifier
     ports:
       - 3001:8080
 
@@ -106,6 +102,6 @@ networks:
     external: true
 
 volumes:
-  db:
-  scripts:
-  uploads:
+  rocketchat_db:
+  rocketchat_scripts:
+  rocketchat_uploads:

@@ -4,7 +4,7 @@ services:
   nexus:
     image: sonatype/nexus3
     volumes:
-      - nexus-data:/nexus-data
+      - nexus_data:/nexus-data
     networks:
       - traefik-proxy
       - default
@@ -12,16 +12,13 @@ services:
     # Control the number of instances deployed
     deploy:
       mode: replicated
-      replicas: 3
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
       labels:
         - traefik.enable=true
-        - traefik.http.routers.nexus_insecure.entrypoints=http
-        - traefik.http.routers.nexus_insecure.rule=Host(`nexus.domain.com`)
-        #- traefik.http.routers.nexus_insecure.middlewares=redirect@file
-
-        - traefik.http.routers.nexus.entrypoints=https
+        - traefik.http.routers.nexus.entrypoints=web
         - traefik.http.routers.nexus.rule=Host(`nexus.domain.com`)
-        #- traefik.http.routers.nexus.tls.certresolver=letsencrypt
         - traefik.http.services.nexus.loadbalancer.server.port=8081
         - traefik.docker.network=traefik-proxy
 
@@ -30,5 +27,5 @@ networks:
     external: true
 
 volumes:
-  nexus-data:
+  nexus_data:
 

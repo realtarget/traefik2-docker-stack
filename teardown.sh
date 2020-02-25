@@ -2,5 +2,5 @@
 
 set -ex
 
-docker stack rm dev_ops
-docker network rm traefik-proxy || true
+docker stack rm devops
+docker network rm traefik-proxy >/dev/null 2>&1 || true

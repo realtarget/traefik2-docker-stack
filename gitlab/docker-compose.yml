@@ -4,7 +4,7 @@ services:
   # The GitLab container itself
   gitlab:
     image: 'gitlab/gitlab-ce:latest'
-    hostname: 'gitlab.mydomain.com'
+    hostname: 'gitlab.domain.com'
     environment:
       GITLAB_OMNIBUS_CONFIG: |
         letsencrypt['enable'] = false
@@ -22,9 +22,9 @@ services:
         gitlab_rails['smtp_enable_starttls_auto'] = true
         gitlab_rails['gitlab_shell_ssh_port'] = 22
     volumes:
-      - gitlab-config:/etc/gitlab
-      - gitlab-logs:/var/log/gitlab
-      - gitlab-data:/var/opt/gitlab
+      - gitlab_config:/etc/gitlab
+      - gitlab_logs:/var/log/gitlab
+      - gitlab_data:/var/opt/gitlab
     networks:
       - traefik-proxy
       - default
@@ -34,13 +34,8 @@ services:
       replicas: 3
       labels:
         - traefik.enable=true
-        - traefik.http.routers.gitlab_insecure.entrypoints=http
-        - traefik.http.routers.gitlab_insecure.rule=Host(`gitlab.domain.com`)
-        #- traefik.http.routers.gitlab_insecure.middlewares=redirect@file
-
-        - traefik.http.routers.gitlab.entrypoints=https
+        - traefik.http.routers.gitlab.entrypoints=web
         - traefik.http.routers.gitlab.rule=Host(`gitlab.domain.com`)
-        #- traefik.http.routers.gitlab.tls.certresolver=letsencrypt
         - traefik.http.services.gitlab.loadbalancer.server.port=80
         - traefik.docker.network=traefik-proxy
 
@@ -51,12 +46,11 @@ services:
         #- traefik.tcp.routers.gitlab-ssh.service=gitlab-ssh-svc
         #- traefik.tcp.services.gitlab-ssh-svc.loadbalancer.server.port=22
 
-
 networks:
   traefik-proxy:
     external: true
 
 volumes:
-  gitlab-config:
-  gitlab-logs:
-  gitlab-data:
+  gitlab_config:
+  gitlab_logs:
+  gitlab_data:

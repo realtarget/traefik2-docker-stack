@@ -1,4 +1,4 @@
-version: "3"
+version: "3.3"
 
 services:
 
@@ -6,23 +6,51 @@ services:
     image: traefik:v2.1
     command:
       - "--log.level=DEBUG"
-      - "--accesslog=true"
+      - "--api.insecure=true"
+      - "--entrypoints.web.address=:80"
+      # Enable prometheus metrics
+      - "--metrics.prometheus=true"
+      #- "--accesslog=true"
       #- "--accessLog.filePath=/access.log"
       #- "--log.filePath=/traefik.log"
+      # Enabling docker provider
       - "--providers.docker=true"
+      # Do not expose containers unless explicitly told so
+      - "--providers.docker.exposedbydefault=false"
       - "--providers.docker.swarmmode=true"
       - "--providers.docker.watch"
    # Control the number of instances deployed
     deploy:
-      mode: replicated
-      replicas: 1
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+      labels:
+        # Explicitly tell Traefik to expose this container
+        - traefik.enable=true
+        - traefik.http.routers.traefik.entrypoints=web
+        - traefik.http.routers.traefik.rule=Host(`traefik.domain.com`)
+        - traefik.docker.network=traefik-proxy
     ports:
-      - "2222:2222" # The SSH port
-      - "80:80" # The HTTP port
-#      - "8080:8080" # The Web UI (enabled by --api)
-      - "443:443" # The HTTPS port
+      # The HTTP port
+      - target: 80
+        published: 80
+        mode: host
+      # The Web UI (enabled by --api)
+      - target: 8080
+        published: 8080
+        mode: ingress
+      # The SSH port (for gitlab)
+      - target: 2222
+        published: 2222
+        mode: host
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro
       #- ./traefik.toml:/etc/traefik/traefik.toml
       # Configuration for FILE Provider
       - ./provider_file.toml:/etc/traefik/provider_file.toml
