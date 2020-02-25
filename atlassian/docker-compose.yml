@@ -30,13 +30,8 @@ services:
       replicas: 1
       labels:
         - traefik.enable=true
-        - traefik.http.routers.jira_insecure.entrypoints=http
-        - traefik.http.routers.jira_insecure.rule=Host(`jira.domain.com`)
-        #- traefik.http.routers.jira_insecure.middlewares=redirect@file
-
-        - traefik.http.routers.jira.entrypoints=https
+        - traefik.http.routers.jira.entrypoints=web
         - traefik.http.routers.jira.rule=Host(`jira.domain.com`)
-        #- traefik.http.routers.jira.tls.certresolver=letsencrypt
         - traefik.http.services.jira.loadbalancer.server.port=8080
         - traefik.docker.network=traefik-proxy
 
@@ -60,13 +55,8 @@ services:
       replicas: 1
       labels:
         - traefik.enable=true
-        - traefik.http.routers.confluence_insecure.entrypoints=http
-        - traefik.http.routers.confluence_insecure.rule=Host(`confluence.domain.com`)
-        #- traefik.http.routers.confluence_insecure.middlewares=redirect@file
-
-        - traefik.http.routers.confluence.entrypoints=https
+        - traefik.http.routers.confluence.entrypoints=web
         - traefik.http.routers.confluence.rule=Host(`confluence.domain.com`)
-        #- traefik.http.routers.confluence.tls.certresolver=letsencrypt
         - traefik.http.services.confluence.loadbalancer.server.port=8090
         - traefik.docker.network=traefik-proxy
 

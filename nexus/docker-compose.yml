@@ -18,8 +18,11 @@ services:
       labels:
         - traefik.enable=true
         - traefik.http.routers.nexus.entrypoints=web
-        - traefik.http.routers.nexus.rule=Host(`nexus.domain.com`)
         - traefik.http.services.nexus.loadbalancer.server.port=8081
+        - traefik.http.routers.nexus.rule=Host(`nexus.domain.com`)
+        # configure port for hosted docker repository in Nexus
+        - traefik.http.services.labdocker.loadbalancer.server.port=8083
+        - traefik.http.routers.labdocker.rule=Host(`docker.domain.com`)
         - traefik.docker.network=traefik-proxy
 
 networks:
